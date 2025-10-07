@@ -1,0 +1,96 @@
+# ========================
+# Python & Virtual Env
+# ========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+*.manifest
+*.spec
+
+# Virtual environment
+venv/
+env/
+.triton_env/
+triton_env/
+.venv/
+ENV/
+*.env
+
+# ========================
+# IDE / Editor Settings
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+*.log
+*.bak
+
+# ========================
+# Jupyter / IPython
+# ========================
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# ========================
+# Data & Experiments
+# ========================
+data/
+datasets/
+experiments/
+experiments/checkpoints/
+experiments/logs/
+experiments/results/
+outputs/
+results/
+tmp/
+cache/
+__results__/
+__temp__/
+
+# ========================
+# Model / Transformer Caches
+# ========================
+.huggingface/
+.cache/
+transformers_cache/
+~/.cache/
+~/.huggingface/
+*.bin
+*.pt
+*.pth
+*.ckpt
+
+# ========================
+# Slither / Mythril Logs
+# ========================
+slither.log
+mythril.log
+mythril.db
+analysis_results.json
+
+# ========================
+# OS Specific
+# ========================
+Thumbs.db
+desktop.ini
+
+# ========================
+# Notebooks / Reports / Docs
+# ========================
+*.pdf
+*.docx
+*.pptx
+*.tex
+*.aux
+*.log
+*.out
+*.toc
