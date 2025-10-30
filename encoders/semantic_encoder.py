@@ -37,24 +37,29 @@ class SemanticEncoder(nn.Module):
         )
 
         self.vulnerability_heads = nn.ModuleDict({
-            'reentrancy': self._create_classification_head(output_dim),
-            'overflow': self._create_classification_head(output_dim),
             'access_control': self._create_classification_head(output_dim),
-            'timestamp': self._create_classification_head(output_dim),
-            'unchecked_call': self._create_classification_head(output_dim)
+            'arithmetic': self._create_classification_head(output_dim),
+            'bad_randomness': self._create_classification_head(output_dim),
+            'denial_of_service': self._create_classification_head(output_dim),
+            'front_running': self._create_classification_head(output_dim),
+            'reentrancy': self._create_classification_head(output_dim),
+            'short_addresses': self._create_classification_head(output_dim),
+            'time_manipulation': self._create_classification_head(output_dim),
+            'unchecked_low_level_calls': self._create_classification_head(output_dim),
+            'other': self._create_classification_head(output_dim)
         })
 
         self.vulnerability_type_mapping = {
-            'reentrancy': 0,
-            'overflow': 1,
-            'underflow': 2,
-            'access_control': 3,
-            'unchecked_call': 4,
-            'timestamp_dependency': 5,
-            'tx_origin': 6,
-            'delegatecall': 7,
-            'self_destruct': 8,
-            'gas_limit': 9
+            'access_control': 0,
+            'arithmetic': 1,
+            'bad_randomness': 2,
+            'denial_of_service': 3,
+            'front_running': 4,
+            'reentrancy': 5,
+            'short_addresses': 6,
+            'time_manipulation': 7,
+            'unchecked_low_level_calls': 8,
+            'other': 9
         }
 
     def _create_classification_head(self, input_dim: int) -> nn.Module:
@@ -107,8 +112,10 @@ class SemanticEncoder(nn.Module):
 
         encoded = self.tokenize_batch(source_codes)
 
-        input_ids = encoded['input_ids']
-        attention_mask = encoded['attention_mask']
+        # Move inputs to the same device as the model
+        device = next(self.bert.parameters()).device
+        input_ids = encoded['input_ids'].to(device)
+        attention_mask = encoded['attention_mask'].to(device)
 
         bert_outputs = self.bert(
             input_ids=input_ids,
