@@ -122,10 +122,16 @@ class DynamicEncoder(nn.Module):
         )
 
         self.vulnerability_heads = nn.ModuleDict({
+            'access_control': self._create_vuln_head(output_dim),
+            'arithmetic': self._create_vuln_head(output_dim),
+            'bad_randomness': self._create_vuln_head(output_dim),
+            'denial_of_service': self._create_vuln_head(output_dim),
+            'front_running': self._create_vuln_head(output_dim),
             'reentrancy': self._create_vuln_head(output_dim),
-            'overflow': self._create_vuln_head(output_dim),
-            'gas_limit': self._create_vuln_head(output_dim),
-            'delegatecall': self._create_vuln_head(output_dim)
+            'short_addresses': self._create_vuln_head(output_dim),
+            'time_manipulation': self._create_vuln_head(output_dim),
+            'unchecked_low_level_calls': self._create_vuln_head(output_dim),
+            'other': self._create_vuln_head(output_dim)
         })
 
         self.opcode_to_id = self._create_opcode_mapping()
@@ -202,6 +208,12 @@ class DynamicEncoder(nn.Module):
     ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
 
         opcodes, contexts, masks = self.encode_traces(execution_traces)
+
+        # Move tensors to same device as model
+        device = next(self.parameters()).device
+        opcodes = opcodes.to(device)
+        contexts = contexts.to(device)
+        masks = masks.to(device)
 
         opcode_embeddings = self.opcode_embedding(opcodes)
         context_embeddings = self.context_encoder(contexts)

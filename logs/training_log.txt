@@ -1,0 +1,120 @@
+/home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'pyg-lib'. Disabling its usage. Stacktrace: Could not load this library: /home/anik/code/Triton/triton_env/lib/python3.12/site-packages/libpyg.so
+  import torch_geometric.typing
+/home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-scatter'. Disabling its usage. Stacktrace: Could not load this library: /home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_scatter/_version_cuda.so
+  import torch_geometric.typing
+/home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-cluster'. Disabling its usage. Stacktrace: Could not load this library: /home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_cluster/_version_cuda.so
+  import torch_geometric.typing
+/home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-spline-conv'. Disabling its usage. Stacktrace: Could not load this library: /home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_spline_conv/_version_cuda.so
+  import torch_geometric.typing
+/home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-sparse'. Disabling its usage. Stacktrace: Could not load this library: /home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_sparse/_version_cuda.so
+  import torch_geometric.typing
+2025-11-05 19:37:58,338 - INFO - ================================================================================
+2025-11-05 19:37:58,338 - INFO - COMPLETE TRITON TRAINING PIPELINE
+2025-11-05 19:37:58,338 - INFO - ================================================================================
+2025-11-05 19:37:58,338 - INFO - Training directory: data/datasets/combined_labeled/train
+2025-11-05 19:37:58,338 - INFO - Output directory: models/checkpoints
+2025-11-05 19:37:58,338 - INFO - Batch size: 4
+2025-11-05 19:37:58,338 - INFO - Epochs: 20
+2025-11-05 19:37:58,338 - INFO - Learning rate: 0.001
+2025-11-05 19:37:58,338 - INFO - Training mode: all
+2025-11-05 19:37:58,338 - INFO - 
+Loading dataset...
+2025-11-05 19:37:58,338 - INFO - Loading contracts from data/datasets/combined_labeled/train...
+2025-11-05 19:37:58,338 - INFO - Found 20 access_control contracts
+2025-11-05 19:37:58,338 - INFO - Found 11 arithmetic contracts
+2025-11-05 19:37:58,338 - INFO - Found 7 bad_randomness contracts
+2025-11-05 19:37:58,338 - INFO - Found 6 denial_of_service contracts
+2025-11-05 19:37:58,338 - INFO - Found 4 front_running contracts
+2025-11-05 19:37:58,339 - INFO - Found 25 reentrancy contracts
+2025-11-05 19:37:58,339 - INFO - Found 1 short_addresses contracts
+2025-11-05 19:37:58,339 - INFO - Found 4 time_manipulation contracts
+2025-11-05 19:37:58,339 - INFO - Found 37 unchecked_low_level_calls contracts
+2025-11-05 19:37:58,339 - INFO - Loaded 115 contracts total
+2025-11-05 19:37:58,339 - INFO - Label distribution:
+2025-11-05 19:37:58,339 - INFO -   access_control: 20 contracts
+2025-11-05 19:37:58,339 - INFO -   arithmetic: 11 contracts
+2025-11-05 19:37:58,339 - INFO -   bad_randomness: 7 contracts
+2025-11-05 19:37:58,339 - INFO -   denial_of_service: 6 contracts
+2025-11-05 19:37:58,339 - INFO -   front_running: 4 contracts
+2025-11-05 19:37:58,339 - INFO -   reentrancy: 25 contracts
+2025-11-05 19:37:58,339 - INFO -   short_addresses: 1 contracts
+2025-11-05 19:37:58,339 - INFO -   time_manipulation: 4 contracts
+2025-11-05 19:37:58,339 - INFO -   unchecked_low_level_calls: 37 contracts
+2025-11-05 19:37:58,347 - INFO - 
+Class weights calculated:
+2025-11-05 19:37:58,347 - INFO -   access_control: count=20, weight=0.0000
+2025-11-05 19:37:58,347 - INFO -   arithmetic: count=11, weight=0.0000
+2025-11-05 19:37:58,347 - INFO -   bad_randomness: count=7, weight=0.0000
+2025-11-05 19:37:58,347 - INFO -   denial_of_service: count=6, weight=0.0000
+2025-11-05 19:37:58,347 - INFO -   front_running: count=4, weight=0.0000
+2025-11-05 19:37:58,347 - INFO -   reentrancy: count=25, weight=0.0000
+2025-11-05 19:37:58,347 - INFO -   short_addresses: count=1, weight=0.0000
+2025-11-05 19:37:58,347 - INFO -   time_manipulation: count=4, weight=0.0000
+2025-11-05 19:37:58,347 - INFO -   unchecked_low_level_calls: count=37, weight=0.0000
+2025-11-05 19:37:58,348 - INFO - 
+Training samples: 92
+2025-11-05 19:37:58,348 - INFO - Validation samples: 23
+2025-11-05 19:37:58,348 - INFO - Using device: cuda
+2025-11-05 19:37:58,348 - INFO - Initializing models...
+Some weights of RobertaModel were not initialized from the model checkpoint at microsoft/graphcodebert-base and are newly initialized: ['pooler.dense.bias', 'pooler.dense.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+2025-11-05 19:37:59,617 - INFO - Using class-weighted loss function
+2025-11-05 19:37:59,618 - INFO - Class weights: [4.9999898e-07 9.0908907e-07 1.4285683e-06 1.6666631e-06 2.4999943e-06
+ 3.9999915e-07 9.9999706e-06 2.4999943e-06 2.7026974e-07 9.9999800e+00]
+2025-11-05 19:37:59,618 - INFO - 
+================================================================================
+2025-11-05 19:37:59,618 - INFO - TESTING ALL ENCODERS
+2025-11-05 19:37:59,618 - INFO - ================================================================================
+2025-11-05 19:37:59,618 - INFO - ================================================================================
+2025-11-05 19:37:59,618 - INFO - TESTING STATIC ENCODER
+2025-11-05 19:37:59,618 - INFO - ================================================================================
+Testing Static Encoder:   0%|          | 0/6 [00:00<?, ?it/s]2025-11-05 19:37:59,904 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:01,520 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:03,067 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:04,630 - ERROR - Slither analysis failed: Unknown error
+Testing Static Encoder:  17%|█▋        | 1/6 [00:06<00:32,  6.57s/it]2025-11-05 19:38:06,455 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:07,989 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:09,533 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:11,062 - ERROR - Slither analysis failed: Unknown error
+Testing Static Encoder:  33%|███▎      | 2/6 [00:12<00:25,  6.32s/it]2025-11-05 19:38:12,599 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:14,129 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:15,670 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:17,184 - ERROR - Slither analysis failed: Unknown error
+Testing Static Encoder:  50%|█████     | 3/6 [00:18<00:18,  6.22s/it]2025-11-05 19:38:18,712 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:20,260 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:21,788 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:23,334 - ERROR - Slither analysis failed: Unknown error
+Testing Static Encoder:  67%|██████▋   | 4/6 [00:24<00:12,  6.19s/it]2025-11-05 19:38:24,838 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:26,360 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:27,890 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:29,421 - ERROR - Slither analysis failed: Unknown error
+Testing Static Encoder:  83%|████████▎ | 5/6 [00:31<00:06,  6.16s/it]2025-11-05 19:38:30,958 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:32,477 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:34,002 - ERROR - Slither analysis failed: Unknown error
+Testing Static Encoder: 100%|██████████| 6/6 [00:35<00:00,  5.63s/it]Testing Static Encoder: 100%|██████████| 6/6 [00:35<00:00,  5.94s/it]
+2025-11-05 19:38:35,287 - INFO - Static Encoder Test: 23/23 successful
+2025-11-05 19:38:35,287 - INFO - Success rate: 100.00%
+2025-11-05 19:38:35,287 - INFO - ================================================================================
+2025-11-05 19:38:35,287 - INFO - TESTING DYNAMIC ENCODER
+2025-11-05 19:38:35,287 - INFO - ================================================================================
+Testing Dynamic Encoder:   0%|          | 0/6 [00:00<?, ?it/s]2025-11-05 19:38:35,555 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:35,849 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:36,116 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:36,391 - ERROR - Slither analysis failed: Unknown error
+Testing Dynamic Encoder:  17%|█▋        | 1/6 [00:01<00:05,  1.17s/it]2025-11-05 19:38:36,733 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:36,991 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:37,259 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:37,526 - ERROR - Slither analysis failed: Unknown error
+Testing Dynamic Encoder:  33%|███▎      | 2/6 [00:02<00:04,  1.12s/it]2025-11-05 19:38:37,816 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:38,080 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:38,342 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:38,607 - ERROR - Slither analysis failed: Unknown error
+Testing Dynamic Encoder:  50%|█████     | 3/6 [00:03<00:03,  1.10s/it]2025-11-05 19:38:38,899 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:39,179 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:39,451 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:39,728 - ERROR - Slither analysis failed: Unknown error
+Testing Dynamic Encoder:  67%|██████▋   | 4/6 [00:04<00:02,  1.11s/it]2025-11-05 19:38:40,019 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:40,294 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:40,554 - ERROR - Slither analysis failed: Unknown error
+2025-11-05 19:38:40,821 - ERROR - Slither analysis failed: Unknown error
+Testing Dynamic Encoder:  83%|████████▎ | 5/6 [00:05<00:01,  1.10s/it]

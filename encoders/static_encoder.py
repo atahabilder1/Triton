@@ -102,11 +102,16 @@ class StaticEncoder(nn.Module):
         )
 
         self.vulnerability_heads = nn.ModuleDict({
-            'reentrancy': nn.Linear(output_dim, 1),
-            'overflow': nn.Linear(output_dim, 1),
             'access_control': nn.Linear(output_dim, 1),
-            'timestamp': nn.Linear(output_dim, 1),
-            'general': nn.Linear(output_dim, 1)
+            'arithmetic': nn.Linear(output_dim, 1),
+            'bad_randomness': nn.Linear(output_dim, 1),
+            'denial_of_service': nn.Linear(output_dim, 1),
+            'front_running': nn.Linear(output_dim, 1),
+            'reentrancy': nn.Linear(output_dim, 1),
+            'short_addresses': nn.Linear(output_dim, 1),
+            'time_manipulation': nn.Linear(output_dim, 1),
+            'unchecked_low_level_calls': nn.Linear(output_dim, 1),
+            'other': nn.Linear(output_dim, 1)
         })
 
     def pdg_to_geometric(self, pdg: nx.DiGraph) -> Data:
@@ -165,6 +170,10 @@ class StaticEncoder(nn.Module):
 
         geometric_data = [self.pdg_to_geometric(pdg) for pdg in pdgs]
         batch = Batch.from_data_list(geometric_data)
+
+        # Move batch to same device as model
+        device = next(self.parameters()).device
+        batch = batch.to(device)
 
         node_features = self.node_encoder(batch.x)
 

@@ -1,0 +1,193 @@
+/home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'pyg-lib'. Disabling its usage. Stacktrace: Could not load this library: /home/anik/code/Triton/triton_env/lib/python3.12/site-packages/libpyg.so
+  import torch_geometric.typing
+/home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-scatter'. Disabling its usage. Stacktrace: Could not load this library: /home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_scatter/_version_cuda.so
+  import torch_geometric.typing
+/home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-cluster'. Disabling its usage. Stacktrace: Could not load this library: /home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_cluster/_version_cuda.so
+  import torch_geometric.typing
+/home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-spline-conv'. Disabling its usage. Stacktrace: Could not load this library: /home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_spline_conv/_version_cuda.so
+  import torch_geometric.typing
+/home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_geometric/__init__.py:4: UserWarning: An issue occurred while importing 'torch-sparse'. Disabling its usage. Stacktrace: Could not load this library: /home/anik/code/Triton/triton_env/lib/python3.12/site-packages/torch_sparse/_version_cuda.so
+  import torch_geometric.typing
+2025-11-13 03:48:42,451 - INFO - ================================================================================
+2025-11-13 03:48:42,451 - INFO - COMPLETE TRITON TRAINING PIPELINE
+2025-11-13 03:48:42,451 - INFO - ================================================================================
+2025-11-13 03:48:42,451 - INFO - Training directory: data/datasets/combined_labeled/train
+2025-11-13 03:48:42,451 - INFO - Output directory: models/checkpoints
+2025-11-13 03:48:42,451 - INFO - Batch size: 4
+2025-11-13 03:48:42,451 - INFO - Epochs: 20
+2025-11-13 03:48:42,451 - INFO - Learning rate: 0.001
+2025-11-13 03:48:42,451 - INFO - Training mode: all
+2025-11-13 03:48:42,451 - INFO - 
+Loading dataset...
+2025-11-13 03:48:42,451 - INFO - Loading data from: data/datasets/combined_labeled/train
+2025-11-13 03:48:42,451 - INFO - Loading contracts from data/datasets/combined_labeled/train...
+2025-11-13 03:48:42,451 - INFO - Found 20 access_control contracts
+2025-11-13 03:48:42,454 - INFO - Found 11 arithmetic contracts
+2025-11-13 03:48:42,455 - INFO - Found 7 bad_randomness contracts
+2025-11-13 03:48:42,456 - INFO - Found 6 denial_of_service contracts
+2025-11-13 03:48:42,457 - INFO - Found 4 front_running contracts
+2025-11-13 03:48:42,457 - INFO - Found 25 reentrancy contracts
+2025-11-13 03:48:42,460 - INFO - Found 1 short_addresses contracts
+2025-11-13 03:48:42,460 - INFO - Found 4 time_manipulation contracts
+2025-11-13 03:48:42,461 - INFO - Found 37 unchecked_low_level_calls contracts
+2025-11-13 03:48:42,465 - INFO - Found 40 safe contracts
+2025-11-13 03:48:42,469 - INFO - Loaded 155 contracts total
+2025-11-13 03:48:42,469 - INFO - Label distribution:
+2025-11-13 03:48:42,469 - INFO -   access_control: 20 contracts
+2025-11-13 03:48:42,469 - INFO -   arithmetic: 11 contracts
+2025-11-13 03:48:42,469 - INFO -   bad_randomness: 7 contracts
+2025-11-13 03:48:42,469 - INFO -   denial_of_service: 6 contracts
+2025-11-13 03:48:42,469 - INFO -   front_running: 4 contracts
+2025-11-13 03:48:42,469 - INFO -   reentrancy: 25 contracts
+2025-11-13 03:48:42,469 - INFO -   short_addresses: 1 contracts
+2025-11-13 03:48:42,469 - INFO -   time_manipulation: 4 contracts
+2025-11-13 03:48:42,469 - INFO -   unchecked_low_level_calls: 37 contracts
+2025-11-13 03:48:42,469 - INFO -   safe: 40 contracts
+2025-11-13 03:48:42,470 - INFO - 
+Class weights calculated:
+2025-11-13 03:48:42,470 - INFO -   access_control: count=20, weight=0.0000
+2025-11-13 03:48:42,470 - INFO -   arithmetic: count=11, weight=0.0000
+2025-11-13 03:48:42,470 - INFO -   bad_randomness: count=7, weight=0.0000
+2025-11-13 03:48:42,470 - INFO -   denial_of_service: count=6, weight=0.0000
+2025-11-13 03:48:42,470 - INFO -   front_running: count=4, weight=0.0000
+2025-11-13 03:48:42,470 - INFO -   reentrancy: count=25, weight=0.0000
+2025-11-13 03:48:42,470 - INFO -   short_addresses: count=1, weight=0.0000
+2025-11-13 03:48:42,470 - INFO -   time_manipulation: count=4, weight=0.0000
+2025-11-13 03:48:42,470 - INFO -   unchecked_low_level_calls: count=37, weight=0.0000
+2025-11-13 03:48:42,470 - INFO -   safe: count=40, weight=0.0000
+2025-11-13 03:48:42,470 - INFO - 
+Training samples: 124
+2025-11-13 03:48:42,470 - INFO - Validation samples: 31
+2025-11-13 03:48:42,471 - INFO - Using device: cuda
+2025-11-13 03:48:42,471 - INFO - TensorBoard logging enabled: runs/triton_20251113_034842
+2025-11-13 03:48:42,471 - INFO - Initializing models...
+Some weights of RobertaModel were not initialized from the model checkpoint at microsoft/graphcodebert-base and are newly initialized: ['pooler.dense.bias', 'pooler.dense.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+2025-11-13 03:48:43,528 - INFO - Using class-weighted loss function
+2025-11-13 03:48:43,528 - INFO - Class weights: [5.4999884e-07 9.9999795e-07 1.5714252e-06 1.8333294e-06 2.7499937e-06
+ 4.3999907e-07 1.0999967e-05 2.7499937e-06 2.9729671e-07 1.0999978e+01
+ 2.7499945e-07]
+2025-11-13 03:48:43,528 - INFO - 
+================================================================================
+2025-11-13 03:48:43,528 - INFO - TESTING ALL ENCODERS
+2025-11-13 03:48:43,528 - INFO - ================================================================================
+2025-11-13 03:48:43,528 - INFO - ================================================================================
+2025-11-13 03:48:43,529 - INFO - TESTING STATIC ENCODER
+2025-11-13 03:48:43,529 - INFO - ================================================================================
+Testing Static Encoder:   0%|          | 0/8 [00:00<?, ?it/s]2025-11-13 03:48:43,646 - INFO - 'solc --version' running
+2025-11-13 03:48:43,702 - INFO - 'solc /tmp/tmpunjic4a2.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes,compact-format --allow-paths .,/tmp' running
+2025-11-13 03:48:43,763 - INFO - Compilation warnings/errors on /tmp/tmpunjic4a2.sol:
+/tmp/tmpunjic4a2.sol:19:37: Warning: "sha3" has been deprecated in favour of "keccak256"
+    bytes4 constant fibSig = bytes4(sha3("setFibonacci(uint256)"));
+                                    ^---------------------------^
+/tmp/tmpunjic4a2.sol:26:5: Warning: No visibility specified. Defaulting to "public". 
+    function withdraw() {
+    ^ (Relevant source part starts here and spans across multiple lines).
+
+2025-11-13 03:48:43,771 - INFO - Extracted PDG with 17 nodes, 13 edges
+2025-11-13 03:48:45,151 - INFO - 'solc --version' running
+2025-11-13 03:48:45,209 - INFO - 'solc /tmp/tmpo9r9chrh.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes,compact-format --allow-paths .,/tmp' running
+2025-11-13 03:48:45,275 - INFO - Extracted PDG with 3 nodes, 2 edges
+2025-11-13 03:48:46,645 - INFO - 'solc --version' running
+2025-11-13 03:48:46,702 - INFO - 'solc /tmp/tmpb7_iu165.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes,compact-format --allow-paths .,/tmp' running
+2025-11-13 03:48:46,920 - INFO - Extracted PDG with 77 nodes, 52 edges
+2025-11-13 03:48:48,275 - INFO - 'solc --version' running
+2025-11-13 03:48:48,340 - INFO - 'solc /tmp/tmpu32f1jeq.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes,compact-format --allow-paths .,/tmp' running
+2025-11-13 03:48:48,405 - INFO - Compilation warnings/errors on /tmp/tmpu32f1jeq.sol:
+/tmp/tmpu32f1jeq.sol:7:5: Warning: No visibility specified. Defaulting to "public". 
+    function set(int new_val){
+    ^ (Relevant source part starts here and spans across multiple lines).
+/tmp/tmpu32f1jeq.sol:11:5: Warning: No visibility specified. Defaulting to "public". 
+    function set_fixed(int new_val){
+    ^ (Relevant source part starts here and spans across multiple lines).
+/tmp/tmpu32f1jeq.sol:15:5: Warning: No visibility specified. Defaulting to "public". 
+    function(){
+    ^ (Relevant source part starts here and spans across multiple lines).
+
+2025-11-13 03:48:48,406 - INFO - Extracted PDG with 4 nodes, 3 edges
+Testing Static Encoder:  12%|█▎        | 1/8 [00:06<00:43,  6.25s/it]2025-11-13 03:48:49,835 - INFO - 'solc --version' running
+2025-11-13 03:48:49,893 - INFO - 'solc /tmp/tmpkn7rj9nx.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes,compact-format --allow-paths .,/tmp' running
+2025-11-13 03:48:49,951 - INFO - Compilation warnings/errors on /tmp/tmpkn7rj9nx.sol:
+/tmp/tmpkn7rj9nx.sol:22:33: Warning: Using contract member "balance" inherited from the address type is deprecated. Convert the contract to "address" type to access the member, for example use "address(contract).balance" instead.
+            msg.sender.transfer(this.balance);
+                                ^----------^
+
+2025-11-13 03:48:49,953 - INFO - Extracted PDG with 4 nodes, 2 edges
+2025-11-13 03:48:51,316 - INFO - 'solc --version' running
+2025-11-13 03:48:51,379 - INFO - 'solc /tmp/tmpe1fxckkh.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes,compact-format --allow-paths .,/tmp' running
+2025-11-13 03:48:51,442 - INFO - Compilation warnings/errors on /tmp/tmpe1fxckkh.sol:
+/tmp/tmpe1fxckkh.sol:20:24: Warning: Using contract member "balance" inherited from the address type is deprecated. Convert the contract to "address" type to access the member, for example use "address(contract).balance" instead.
+        Owner.transfer(this.balance);
+                       ^----------^
+/tmp/tmpe1fxckkh.sol:29:9: Warning: Return value of low-level calls not used.
+        adr.call.value(msg.value)(data);
+        ^-----------------------------^
+/tmp/tmpe1fxckkh.sol:36:23: Warning: Using contract member "balance" inherited from the address type is deprecated. Convert the contract to "address" type to access the member, for example use "address(contract).balance" instead.
+        if(msg.value>=this.balance)
+                      ^----------^
+/tmp/tmpe1fxckkh.sol:38:26: Warning: Using contract member "balance" inherited from the address type is deprecated. Convert the contract to "address" type to access the member, for example use "address(contract).balance" instead.
+            adr.transfer(this.balance+msg.value);
+                         ^----------^
+
+2025-11-13 03:48:51,445 - INFO - Extracted PDG with 9 nodes, 6 edges
+2025-11-13 03:48:52,798 - INFO - 'solc --version' running
+2025-11-13 03:48:52,854 - INFO - 'solc /tmp/tmpgn2szs__.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes,compact-format --allow-paths .,/tmp' running
+2025-11-13 03:48:52,974 - INFO - Extracted PDG with 44 nodes, 28 edges
+2025-11-13 03:48:54,348 - INFO - 'solc --version' running
+2025-11-13 03:48:54,413 - INFO - 'solc /tmp/tmptbzhts0a.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes,compact-format --allow-paths .,/tmp' running
+2025-11-13 03:48:54,477 - INFO - Compilation warnings/errors on /tmp/tmptbzhts0a.sol:
+/tmp/tmptbzhts0a.sol:25:9: Warning: Return value of low-level calls not used.
+        msg.sender.call.value(balances[msg.sender])();
+        ^-------------------------------------------^
+
+2025-11-13 03:48:54,479 - INFO - Extracted PDG with 4 nodes, 3 edges
+Testing Static Encoder:  25%|██▌       | 2/8 [00:12<00:36,  6.12s/it]2025-11-13 03:48:55,872 - INFO - 'solc --version' running
+2025-11-13 03:48:55,929 - INFO - 'solc /tmp/tmpma1ah0f0.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes,compact-format --allow-paths .,/tmp' running
+2025-11-13 03:48:55,994 - INFO - Compilation warnings/errors on /tmp/tmpma1ah0f0.sol:
+/tmp/tmpma1ah0f0.sol:24:6: Warning: Defining constructors as functions with the same name as the contract is deprecated. Use "constructor(...) { ... }" instead.
+     function Lottery() {
+     ^ (Relevant source part starts here and spans across multiple lines).
+/tmp/tmpma1ah0f0.sol:30:10: Warning: "throw" is deprecated in favour of "revert()", "require()" and "assert()".
+         throw;
+         ^---^
+/tmp/tmpma1ah0f0.sol:48:18: Warning: "throw" is deprecated in favour of "revert()", "require()" and "assert()".
+                 throw;
+                 ^---^
+/tmp/tmpma1ah0f0.sol:55:40: Warning: "throw" is deprecated in favour of "revert()", "require()" and "assert()".
+         if(msg.sender != organizer) { throw; }
+                                       ^---^
+/tmp/tmpma1ah0f0.sol:64:40: Warning: "throw" is deprecated in favour of "revert()", "require()" and "assert()".
+         if(msg.sender != organizer) { throw; }
+                                       ^---^
+/tmp/tmpma1ah0f0.sol:58:14: Warning: Invoking events without "emit" prefix is deprecated.
+             GetBet(bets[i].betAmount, bets[i].blockNumber, bets[i].won);
+             ^---------------------------------------------------------^
+/tmp/tmpma1ah0f0.sol:66:10: Warning: "suicide" has been deprecated in favour of "selfdestruct"
+         suicide(organizer);
+         ^----------------^
+/tmp/tmpma1ah0f0.sol:24:6: Warning: No visibility specified. Defaulting to "public". 
+     function Lottery() {
+     ^ (Relevant source part starts here and spans across multiple lines).
+/tmp/tmpma1ah0f0.sol:29:6: Warning: No visibility specified. Defaulting to "public". 
+     function() {
+     ^ (Relevant source part starts here and spans across multiple lines).
+/tmp/tmpma1ah0f0.sol:34:6: Warning: No visibility specified. Defaulting to "public". 
+     function makeBet() {
+     ^ (Relevant source part starts here and spans across multiple lines).
+/tmp/tmpma1ah0f0.sol:42:24: Warning: "msg.value" used in non-payable function. Do you want to add the "payable" modifier to this function?
+         bets.push(Bet(msg.value, block.number, won));
+                       ^-------^
+/tmp/tmpma1ah0f0.sol:46:34: Warning: "msg.value" used in non-payable function. Do you want to add the "payable" modifier to this function?
+             if(!msg.sender.send(msg.value)) {
+                                 ^-------^
+/tmp/tmpma1ah0f0.sol:54:6: Warning: No visibility specified. Defaulting to "public". 
+     function getBets() {
+     ^ (Relevant source part starts here and spans across multiple lines).
+/tmp/tmpma1ah0f0.sol:63:6: Warning: No visibility specified. Defaulting to "public". 
+     function destroy() {
+     ^ (Relevant source part starts here and spans across multiple lines).
+
+2025-11-13 03:48:56,000 - INFO - Extracted PDG with 8 nodes, 6 edges
+2025-11-13 03:48:57,351 - INFO - 'solc --version' running
+2025-11-13 03:48:57,420 - INFO - 'solc /tmp/tmpjl9h3sb6.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes,compact-format --allow-paths .,/tmp' running
+2025-11-13 03:48:57,494 - INFO - Extracted PDG with 9 nodes, 8 edges

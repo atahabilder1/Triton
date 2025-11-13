@@ -247,23 +247,29 @@ class AgenticOrchestrator:
         accumulated_evidence: Dict[str, Any]
     ) -> AnalysisResult:
 
+        # Get initial ML prediction if available
+        initial_prediction = accumulated_evidence.get('initial_prediction', None)
+
         if phase == AnalysisPhase.INITIAL:
-            return self._initial_analysis(source_code, contract_name, target_vulnerability)
+            result = self._initial_analysis(source_code, contract_name, target_vulnerability)
+            # Store initial prediction for later phases
+            accumulated_evidence['initial_prediction'] = result.vulnerability_type
+            return result
 
         elif phase == AnalysisPhase.DEEP_STATIC:
-            return self._deep_static_analysis(source_code, contract_name, target_vulnerability, accumulated_evidence)
+            return self._deep_static_analysis(source_code, contract_name, target_vulnerability, accumulated_evidence, initial_prediction)
 
         elif phase == AnalysisPhase.DEEP_DYNAMIC:
-            return self._deep_dynamic_analysis(source_code, contract_name, target_vulnerability, accumulated_evidence)
+            return self._deep_dynamic_analysis(source_code, contract_name, target_vulnerability, accumulated_evidence, initial_prediction)
 
         elif phase == AnalysisPhase.DEEP_SEMANTIC:
-            return self._deep_semantic_analysis(source_code, contract_name, target_vulnerability, accumulated_evidence)
+            return self._deep_semantic_analysis(source_code, contract_name, target_vulnerability, accumulated_evidence, initial_prediction)
 
         elif phase == AnalysisPhase.REFINEMENT:
-            return self._refinement_analysis(source_code, contract_name, target_vulnerability, accumulated_evidence)
+            return self._refinement_analysis(source_code, contract_name, target_vulnerability, accumulated_evidence, initial_prediction)
 
         elif phase == AnalysisPhase.FINAL:
-            return self._refinement_analysis(source_code, contract_name, target_vulnerability, accumulated_evidence)
+            return self._refinement_analysis(source_code, contract_name, target_vulnerability, accumulated_evidence, initial_prediction)
 
         else:
             raise ValueError(f"Unknown analysis phase: {phase}")
@@ -389,7 +395,8 @@ class AgenticOrchestrator:
         source_code: str,
         contract_name: Optional[str],
         target_vulnerability: Optional[str],
-        accumulated_evidence: Dict[str, Any]
+        accumulated_evidence: Dict[str, Any],
+        initial_prediction: Optional[str]
     ) -> AnalysisResult:
 
         slither_result = self.slither_wrapper.analyze_contract(source_code, contract_name)
@@ -414,9 +421,12 @@ class AgenticOrchestrator:
 
         reasoning = f"Deep static analysis found {len(slither_result.get('vulnerabilities', []))} vulnerabilities with detailed PDG analysis"
 
+        # Use initial ML prediction instead of hardcoded fallback
+        predicted_vuln = target_vulnerability or initial_prediction or "unknown"
+
         return AnalysisResult(
             vulnerability_detected=confidence > 0.5,
-            vulnerability_type=target_vulnerability or "access_control",
+            vulnerability_type=predicted_vuln,
             confidence=confidence,
             evidence=evidence,
             reasoning=reasoning,
@@ -429,7 +439,8 @@ class AgenticOrchestrator:
         source_code: str,
         contract_name: Optional[str],
         target_vulnerability: Optional[str],
-        accumulated_evidence: Dict[str, Any]
+        accumulated_evidence: Dict[str, Any],
+        initial_prediction: Optional[str]
     ) -> AnalysisResult:
 
         mythril_result = self.mythril_wrapper.analyze_contract(source_code, contract_name)
@@ -453,9 +464,12 @@ class AgenticOrchestrator:
 
         reasoning = f"Deep dynamic analysis with {len(mythril_result.get('execution_traces', []))} execution traces and symbolic execution"
 
+        # Use initial ML prediction instead of hardcoded fallback
+        predicted_vuln = target_vulnerability or initial_prediction or "unknown"
+
         return AnalysisResult(
             vulnerability_detected=confidence > 0.5,
-            vulnerability_type=target_vulnerability or "reentrancy",
+            vulnerability_type=predicted_vuln,
             confidence=confidence,
             evidence=evidence,
             reasoning=reasoning,
@@ -468,7 +482,8 @@ class AgenticOrchestrator:
         source_code: str,
         contract_name: Optional[str],
         target_vulnerability: Optional[str],
-        accumulated_evidence: Dict[str, Any]
+        accumulated_evidence: Dict[str, Any],
+        initial_prediction: Optional[str]
     ) -> AnalysisResult:
 
         with torch.no_grad():
@@ -490,9 +505,12 @@ class AgenticOrchestrator:
 
         reasoning = f"Deep semantic analysis using GraphCodeBERT with vulnerability-specific scoring"
 
+        # Use initial ML prediction instead of hardcoded fallback
+        predicted_vuln = target_vulnerability or initial_prediction or "unknown"
+
         return AnalysisResult(
             vulnerability_detected=confidence > 0.5,
-            vulnerability_type=target_vulnerability or "semantic_pattern",
+            vulnerability_type=predicted_vuln,
             confidence=confidence,
             evidence=evidence,
             reasoning=reasoning,
@@ -505,7 +523,8 @@ class AgenticOrchestrator:
         source_code: str,
         contract_name: Optional[str],
         target_vulnerability: Optional[str],
-        accumulated_evidence: Dict[str, Any]
+        accumulated_evidence: Dict[str, Any],
+        initial_prediction: Optional[str]
     ) -> AnalysisResult:
 
         static_confidence = accumulated_evidence.get('static_confidence', 0.5)
@@ -530,9 +549,12 @@ class AgenticOrchestrator:
 
         reasoning = f"Refinement analysis combining all modalities with ensemble confidence {ensemble_confidence:.3f}"
 
+        # Use initial ML prediction instead of hardcoded fallback
+        predicted_vuln = target_vulnerability or initial_prediction or "unknown"
+
         return AnalysisResult(
             vulnerability_detected=refined_confidence > 0.5,
-            vulnerability_type=target_vulnerability or "refined_prediction",
+            vulnerability_type=predicted_vuln,
             confidence=refined_confidence,
             evidence=evidence,
             reasoning=reasoning,
@@ -580,7 +602,7 @@ class AgenticOrchestrator:
                 modality_contributions={}
             )
 
-        # Get the initial analysis result which has the actual predicted vulnerability
+        # Get the initial analysis result which has the actual ML predicted vulnerability
         initial_result = workflow_state.results_history[0]
         last_result = workflow_state.results_history[-1]
 
@@ -593,16 +615,12 @@ class AgenticOrchestrator:
 
         final_confidence = final_confidence * consistency
 
-        # Use the vulnerability type from initial analysis (has actual ML prediction)
-        # unless it was updated to something more specific in later phases
+        # ALWAYS use the vulnerability type from initial analysis (ML prediction)
+        # This is the output from the trained fusion module and should be trusted
         final_vuln_type = initial_result.vulnerability_type
-        for result in workflow_state.results_history:
-            # If any later phase has a more specific vulnerability type, use that
-            if result.vulnerability_type not in ['unknown', 'refined_prediction', 'semantic_pattern']:
-                final_vuln_type = result.vulnerability_type
 
         reasoning = f"Final synthesis after {workflow_state.iteration} iterations with consistency score {consistency:.3f}. "
-        reasoning += f"Detected vulnerability type: {final_vuln_type}"
+        reasoning += f"ML model predicted: {final_vuln_type}, final confidence: {final_confidence:.3f}"
 
         return AnalysisResult(
             vulnerability_detected=final_confidence > 0.5,

@@ -32,6 +32,7 @@ class MythrilWrapper:
         contract_name: Optional[str] = None,
         solc_version: str = "0.8.0"
     ) -> Dict:
+        temp_file = None
         try:
             with tempfile.NamedTemporaryFile(mode='w', suffix='.sol', delete=False) as f:
                 f.write(source_code)
@@ -43,7 +44,7 @@ class MythrilWrapper:
                 '--solv', solc_version,
                 '--execution-timeout', str(self.timeout),
                 '--max-depth', str(self.max_depth),
-                '--output', 'json'
+                '-o', 'json'
             ]
 
             if contract_name:
@@ -56,11 +57,18 @@ class MythrilWrapper:
                 timeout=self.timeout + 60
             )
 
-            os.unlink(temp_file)
+            # Clean up temp file immediately
+            if temp_file and os.path.exists(temp_file):
+                os.unlink(temp_file)
+                temp_file = None
 
             if result.returncode != 0 and not result.stdout:
-                logger.error(f"Mythril analysis failed: {result.stderr}")
-                return {'success': False, 'error': result.stderr}
+                # Extract meaningful error from stderr
+                stderr_lines = result.stderr.strip().split('\n') if result.stderr else []
+                error_msg = next((line for line in stderr_lines if 'Error' in line or 'error' in line),
+                               stderr_lines[-1] if stderr_lines else 'Unknown error')
+                logger.error(f"Mythril analysis failed: {error_msg[:200]}")
+                return {'success': False, 'error': error_msg}
 
             analysis = json.loads(result.stdout) if result.stdout else {}
 
@@ -73,8 +81,11 @@ class MythrilWrapper:
             logger.error(f"Mythril analysis error: {str(e)}")
             return {'success': False, 'error': str(e)}
         finally:
-            if 'temp_file' in locals() and os.path.exists(temp_file):
-                os.unlink(temp_file)
+            if temp_file and os.path.exists(temp_file):
+                try:
+                    os.unlink(temp_file)
+                except:
+                    pass
 
     def _process_mythril_output(self, analysis: Dict, source_code: str) -> Dict:
         vulnerabilities = []

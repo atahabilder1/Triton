@@ -95,3 +95,6 @@ desktop.ini
 *.log
 *.out
 *.toc
+
+# Development notes (internal)
+.dev-notes/
