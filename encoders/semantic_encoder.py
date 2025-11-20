@@ -27,7 +27,7 @@ class SemanticEncoder(nn.Module):
             for param in self.bert.parameters():
                 param.requires_grad = False
 
-        self.vulnerability_embeddings = nn.Embedding(10, 64)
+        self.vulnerability_embeddings = nn.Embedding(11, 64)
 
         self.projection = nn.Sequential(
             nn.Linear(self.bert.config.hidden_size + 64, 512),
@@ -46,7 +46,8 @@ class SemanticEncoder(nn.Module):
             'short_addresses': self._create_classification_head(output_dim),
             'time_manipulation': self._create_classification_head(output_dim),
             'unchecked_low_level_calls': self._create_classification_head(output_dim),
-            'other': self._create_classification_head(output_dim)
+            'other': self._create_classification_head(output_dim),
+            'safe': self._create_classification_head(output_dim)
         })
 
         self.vulnerability_type_mapping = {
@@ -59,7 +60,8 @@ class SemanticEncoder(nn.Module):
             'short_addresses': 6,
             'time_manipulation': 7,
             'unchecked_low_level_calls': 8,
-            'other': 9
+            'other': 9,
+            'safe': 10
         }
 
     def _create_classification_head(self, input_dim: int) -> nn.Module:

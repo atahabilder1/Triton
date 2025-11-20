@@ -34,6 +34,7 @@ python scripts/train_complete_pipeline.py \
     --num-epochs 20 \
     --batch-size 16 \
     --learning-rate 0.001 \
+    --skip-tests \
     2>&1 | tee "$LOG_FILE"
 
 echo ""

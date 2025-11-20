@@ -131,7 +131,8 @@ class DynamicEncoder(nn.Module):
             'short_addresses': self._create_vuln_head(output_dim),
             'time_manipulation': self._create_vuln_head(output_dim),
             'unchecked_low_level_calls': self._create_vuln_head(output_dim),
-            'other': self._create_vuln_head(output_dim)
+            'other': self._create_vuln_head(output_dim),
+            'safe': self._create_vuln_head(output_dim)
         })
 
         self.opcode_to_id = self._create_opcode_mapping()

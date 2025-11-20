@@ -1,7 +1,7 @@
 # Triton: Multi-Modal Smart Contract Vulnerability Detection
 
 Triton is an AI-powered system that detects vulnerabilities in Ethereum smart contracts using:
-- **Static Analysis** (Slither): Control Flow Graphs
+- **Static Analysis** (Slither): Program Dependence Graphs (PDG)
 - **Dynamic Analysis** (Mythril): Execution Traces
 - **Semantic Analysis** (CodeBERT): Code Understanding
 - **Cross-Modal Fusion**: Combines all three for better accuracy
@@ -10,44 +10,61 @@ Triton is an AI-powered system that detects vulnerabilities in Ethereum smart co
 
 ## 🚀 Quick Start
 
-### 1. Train the Model
+### Static Vulnerability Detection (Recommended)
+
+**GPU-Optimized Training:**
 ```bash
-python scripts/train_complete_pipeline.py \
-    --train-dir data/datasets/smartbugs-curated/dataset \
-    --num-epochs 10
+./start_static_training_gpu.sh
 ```
 
-### 2. Test the Model
+**Standard Training:**
 ```bash
-python scripts/test_dataset_performance.py --dataset smartbugs
+./start_static_training.sh
 ```
 
-### 3. View Results
+**Time:** 2-3 hours (GPU) | 12-15 hours (CPU)
+
+See **[QUICK_START.md](QUICK_START.md)** for detailed guide.
+
+### Full Multi-Modal Pipeline
+
 ```bash
-cat results/triton_test_summary_*.txt
+./start_full_training.sh
 ```
+
+**Time:** 8-12 hours (trains all 4 models: static, dynamic, semantic, fusion)
 
 ---
 
 ## 📖 Documentation
 
-- **[HOW_TO_USE.md](HOW_TO_USE.md)** - Complete training and testing guide
-- **[README_SIMPLE.md](README_SIMPLE.md)** - Quick reference card
-- **[docs/](docs/)** - Detailed guides
+### Quick References
+- **[QUICK_START.md](QUICK_START.md)** - Static training quick start
+- **[docs/guides/TRAINING_QUICK_START.md](docs/guides/TRAINING_QUICK_START.md)** - Quick reference guide
+- **[docs/guides/STATIC_TRAINING_GUIDE.md](docs/guides/STATIC_TRAINING_GUIDE.md)** - Detailed training guide
+- **[docs/guides/TRAINING_SUMMARY.md](docs/guides/TRAINING_SUMMARY.md)** - Complete summary
+
+### Detailed Guides
+- **[docs/guides/HOW_TO_TRAIN.md](docs/guides/HOW_TO_TRAIN.md)** - Multi-modal training guide
+- **[docs/guides/DATASET_AND_TRAINING_SUMMARY.md](docs/guides/DATASET_AND_TRAINING_SUMMARY.md)** - Dataset information
+- **[PROJECT_ORGANIZATION.md](PROJECT_ORGANIZATION.md)** - Project structure
 
 ---
 
-## 📊 Current Performance
+## 📊 Expected Performance
 
-**Dataset:** 143 labeled contracts (SmartBugs Curated)
+**Dataset:** FORGE (6,575 contracts)
+- Train: 4,540 contracts (69%)
+- Validation: 1,011 contracts (15%)
+- Test: 1,024 contracts (16%)
 
-**Detection Rates:**
-- Overall: 10.49%
-- Reentrancy: 32.26% (best)
-- Arithmetic: 20.00%
-- Access Control: 11.11%
-
-**Why low?** Small dataset (218 contracts) + class imbalance. Needs data augmentation.
+**Static Encoder Detection Rates:**
+- Overall Accuracy: 60-72%
+- Reentrancy: 75-82% ✅
+- Arithmetic: 70-77% ✅
+- Unchecked Calls: 70-76% ✅
+- Access Control: 60-70% ⚠️
+- Short Addresses: 30-45% ❌ (very imbalanced class)
 
 ---
 
@@ -55,18 +72,52 @@ cat results/triton_test_summary_*.txt
 
 ```
 Triton/
-├── scripts/
-│   ├── train_complete_pipeline.py       # Main training script
-│   └── test_dataset_performance.py      # Main testing script
+├── scripts/                          # Training & testing scripts
+│   ├── train_static_optimized.py       # GPU-optimized static training ⭐
+│   ├── train_static_only.py            # Standard static training
+│   ├── train_complete_pipeline.py      # Multi-modal pipeline
+│   ├── test_dataset_performance.py     # Testing script
+│   ├── monitor_training_detailed.sh    # Training monitoring
+│   └── quick_status.sh                 # Quick training status
+│
+├── encoders/                         # Model architectures
+│   ├── static_encoder.py               # PDG + GAT model
+│   ├── dynamic_encoder.py              # Execution trace + LSTM
+│   ├── semantic_encoder.py             # CodeBERT fine-tuning
+│   └── ...
+│
+├── fusion/                           # Cross-modal fusion
+│   └── cross_modal_fusion.py           # Fusion module
+│
+├── tools/                            # Analysis tools
+│   └── slither_wrapper.py              # PDG extraction (Slither)
 │
 ├── models/checkpoints/               # Trained models
+│   ├── static_encoder_best.pt          # Best static model
+│   └── ...
 │
 ├── data/datasets/                    # Training data
-│   └── smartbugs-curated/dataset/    # 143 labeled contracts
+│   └── forge_balanced_accurate/        # 6,575 contracts
+│       ├── train/                      # 4,540 contracts
+│       ├── val/                        # 1,011 contracts
+│       └── test/                       # 1,024 contracts
 │
+├── docs/guides/                      # Documentation
+│   ├── TRAINING_QUICK_START.md         # Quick reference
+│   ├── STATIC_TRAINING_GUIDE.md        # Detailed guide
+│   ├── TRAINING_SUMMARY.md             # Complete summary
+│   ├── DATASET_AND_TRAINING_SUMMARY.md # Dataset info
+│   └── HOW_TO_TRAIN.md                 # Multi-modal guide
+│
+├── logs/                             # Training logs
+├── runs/                             # TensorBoard logs
 ├── results/                          # Test results
 │
-└── HOW_TO_USE.md                     # Read this!
+├── start_static_training_gpu.sh      # Static GPU-optimized launcher ⭐
+├── start_static_training.sh          # Static standard launcher
+├── start_full_training.sh            # Full pipeline launcher (all 4 models)
+├── QUICK_START.md                    # Quick start guide
+└── README.md                         # This file
 ```
 
 ---
@@ -90,64 +141,95 @@ pip install -r requirements.txt
 ## 🎯 What Triton Does
 
 1. **Loads** smart contracts from dataset
-2. **Extracts** features using 3 analysis tools
-3. **Trains** 4 neural network components
-4. **Detects** 10 vulnerability types:
+2. **Extracts** features using 3 analysis methods:
+   - **Static**: Program Dependence Graphs (Slither)
+   - **Dynamic**: Execution Traces (Mythril)
+   - **Semantic**: Code Embeddings (CodeBERT)
+3. **Trains** neural network components:
+   - Static: Graph Attention Network (GAT)
+   - Dynamic: LSTM
+   - Semantic: Fine-tuned Transformer
+   - Fusion: Cross-modal attention
+4. **Detects** 11 vulnerability types:
    - Reentrancy
    - Arithmetic Overflow/Underflow
    - Access Control
-   - Unchecked External Calls
+   - Unchecked Low-Level Calls
    - Bad Randomness
    - Denial of Service
    - Front Running
    - Time Manipulation
    - Short Address Attack
-   - Others
+   - Other
+   - Safe (no vulnerabilities)
 
 ---
 
-## 📚 Training Process (4 Phases)
+## 📚 Training Modes
 
-**Phase 1:** Static Encoder (learns from CFGs)
-**Phase 2:** Dynamic Encoder (learns from execution traces)
-**Phase 3:** Semantic Encoder (fine-tunes CodeBERT)
-**Phase 4:** Fusion Module (combines all three)
+### Static-Only (Recommended)
+- **Time:** 2-3 hours (GPU)
+- **Model:** Graph Attention Network on PDGs
+- **Accuracy:** 60-72%
+- **Best for:** Control flow vulnerabilities (reentrancy, arithmetic, etc.)
 
-**Time:** 1-2 hours for 143 contracts
-
----
-
-## 🔬 Testing Process
-
-1. Load trained models
-2. Analyze test contracts
-3. Generate detection reports
-4. Compare with ground truth
-
-**Time:** 5-10 minutes for 143 contracts
+### Full Multi-Modal Pipeline
+- **Time:** 8-12 hours (GPU)
+- **Models:** All 4 components (static, dynamic, semantic, fusion)
+- **Accuracy:** 55-70% (fusion)
+- **Best for:** Comprehensive detection
 
 ---
 
-## 💡 Improving Performance
+## 🔬 Real-Time Training Monitoring
 
-Current detection is low due to small dataset. To improve:
+During training, you'll see:
 
-1. **Add more labeled data** (target: 500-1000 contracts)
-2. **Data augmentation** (5-10× increase)
-3. **Fix Slither/Mythril errors** (currently ~100% failure)
-4. **Train longer** (more epochs)
-5. **Tune hyperparameters** (batch size, learning rate)
+**Every 10 batches:**
+```
+Batch [  10/568] | Loss: 1.2345 | Acc: 45.67% | Speed: 1.23 batch/s | ETA: 7m 32s
+```
+
+**Every epoch:**
+```
+EPOCH 5/50 SUMMARY
+Train Loss: 1.0234 | Train Acc: 52.34%
+Val Loss:   0.9876 | Val Acc:   55.67% | Val F1: 0.5234
+✅ NEW BEST MODEL SAVED!
+```
+
+**Every 5 epochs (detailed metrics):**
+```
+✅ reentrancy           0.7234  0.6891  0.7058   94/119 (79.0%)
+⚠️  access_control      0.5234  0.5891  0.5546   87/148 (58.9%)
+❌ short_addresses      0.2286  0.2857  0.2545    2/7   (28.6%)
+```
+
+See `docs/guides/TRAINING_QUICK_START.md` for interpretation.
+
+---
+
+## 💪 GPU Optimization
+
+The training scripts are optimized for RTX A6000 (46GB VRAM):
+- Batch size: 16 (adjust for your GPU)
+- Parallel data loading: 8 workers
+- Mixed precision training
+- Automatic early stopping
+
+**Monitor GPU usage:**
+```bash
+watch -n 1 nvidia-smi
+```
+
+**Expected:** 80-100% GPU utilization, 8-12 GB memory usage
 
 ---
 
 ## 📄 License
 
-[Your License Here]
-
-## 🤝 Contributing
-
-[Contributing Guidelines]
+MIT License
 
 ---
 
-**Last Updated:** November 5, 2025
+**Last Updated:** November 19, 2025

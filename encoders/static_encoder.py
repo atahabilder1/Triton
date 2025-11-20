@@ -70,8 +70,9 @@ class StaticEncoder(nn.Module):
         hidden_dim: int = 256,
         output_dim: int = 768,
         num_heads: int = 8,
-        num_vulnerability_types: int = 10,
-        dropout: float = 0.2
+        num_vulnerability_types: int = 11,
+        dropout: float = 0.2,
+        vulnerability_types: Optional[List[str]] = None
     ):
         super(StaticEncoder, self).__init__()
 
@@ -101,24 +102,35 @@ class StaticEncoder(nn.Module):
             nn.Linear(hidden_dim * 2, output_dim)
         )
 
-        self.vulnerability_heads = nn.ModuleDict({
-            'access_control': nn.Linear(output_dim, 1),
-            'arithmetic': nn.Linear(output_dim, 1),
-            'bad_randomness': nn.Linear(output_dim, 1),
-            'denial_of_service': nn.Linear(output_dim, 1),
-            'front_running': nn.Linear(output_dim, 1),
-            'reentrancy': nn.Linear(output_dim, 1),
-            'short_addresses': nn.Linear(output_dim, 1),
-            'time_manipulation': nn.Linear(output_dim, 1),
-            'unchecked_low_level_calls': nn.Linear(output_dim, 1),
-            'other': nn.Linear(output_dim, 1)
-        })
+        # DYNAMIC vulnerability heads - create based on actual vulnerability types
+        if vulnerability_types is not None:
+            # Use provided vulnerability types
+            self.vulnerability_heads = nn.ModuleDict({
+                vuln_type: nn.Linear(output_dim, 1) for vuln_type in vulnerability_types
+            })
+        else:
+            # Fallback to all 11 types if not specified
+            self.vulnerability_heads = nn.ModuleDict({
+                'access_control': nn.Linear(output_dim, 1),
+                'arithmetic': nn.Linear(output_dim, 1),
+                'bad_randomness': nn.Linear(output_dim, 1),
+                'denial_of_service': nn.Linear(output_dim, 1),
+                'front_running': nn.Linear(output_dim, 1),
+                'reentrancy': nn.Linear(output_dim, 1),
+                'short_addresses': nn.Linear(output_dim, 1),
+                'time_manipulation': nn.Linear(output_dim, 1),
+                'unchecked_low_level_calls': nn.Linear(output_dim, 1),
+                'other': nn.Linear(output_dim, 1),
+                'safe': nn.Linear(output_dim, 1)
+            })
 
     def pdg_to_geometric(self, pdg: nx.DiGraph) -> Data:
         if pdg.number_of_nodes() == 0:
+            # Create a dummy node for empty graphs
             x = torch.zeros((1, 5), dtype=torch.float32)
-            edge_index = torch.zeros((2, 0), dtype=torch.long)
-            edge_attr = torch.zeros((0, 4), dtype=torch.float32)
+            edge_index = torch.tensor([[0], [0]], dtype=torch.long)  # Self-loop
+            edge_attr = torch.zeros((1, 4), dtype=torch.float32)
+            edge_attr[0, 0] = 1  # Mark as dummy edge
             return Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
 
         node_to_idx = {node: idx for idx, node in enumerate(pdg.nodes())}
@@ -156,6 +168,12 @@ class StaticEncoder(nn.Module):
             edge_encoding = [0, 0, 0, 0]
             edge_encoding[edge_type_idx] = 1
             edge_features.append(edge_encoding)
+
+        # Add self-loops if no edges exist (graphs with only nodes)
+        if len(edge_list) == 0:
+            for idx in range(len(node_features)):
+                edge_list.append([idx, idx])
+                edge_features.append([1, 0, 0, 0])  # Mark as self-loop
 
         edge_index = torch.tensor(edge_list, dtype=torch.long).t().contiguous()
         edge_attr = torch.tensor(edge_features, dtype=torch.float32)

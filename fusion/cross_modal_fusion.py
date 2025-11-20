@@ -78,7 +78,7 @@ class AdaptiveModalityWeighting(nn.Module):
     def __init__(
         self,
         input_dim: int = 512,
-        num_vulnerability_types: int = 10,
+        num_vulnerability_types: int = 11,
         temperature: float = 1.0
     ):
         super(AdaptiveModalityWeighting, self).__init__()
@@ -97,16 +97,17 @@ class AdaptiveModalityWeighting(nn.Module):
         )
 
         self.vulnerability_type_mapping = {
-            'reentrancy': 0,
-            'overflow': 1,
-            'underflow': 2,
-            'access_control': 3,
-            'unchecked_call': 4,
-            'timestamp_dependency': 5,
-            'tx_origin': 6,
-            'delegatecall': 7,
-            'self_destruct': 8,
-            'gas_limit': 9
+            'access_control': 0,
+            'arithmetic': 1,
+            'bad_randomness': 2,
+            'denial_of_service': 3,
+            'front_running': 4,
+            'reentrancy': 5,
+            'short_addresses': 6,
+            'time_manipulation': 7,
+            'unchecked_low_level_calls': 8,
+            'other': 9,
+            'safe': 10
         }
 
         self.default_weights = {
@@ -202,7 +203,7 @@ class CrossModalFusion(nn.Module):
         output_dim: int = 768,
         num_heads: int = 8,
         dropout: float = 0.1,
-        num_vulnerability_types: int = 10
+        num_vulnerability_types: int = 11
     ):
         super(CrossModalFusion, self).__init__()
 

@@ -1,0 +1,204 @@
+# Triton - Smart Contract Vulnerability Detection Configuration
+
+# ============================================================================
+# Data Paths
+# ============================================================================
+data:
+  # Base directories
+  base_dir: "data"
+  datasets_dir: "data/datasets"
+  cache_dir: "data/cache"
+
+  # Specific dataset paths
+  forge_balanced: "data/datasets/forge_balanced_accurate"
+  smartbugs: "data/datasets/smartbugs"
+  audits: "data/datasets/audits"
+
+  # Train/Val/Test splits
+  train_dir: "data/datasets/forge_balanced_accurate/train"
+  val_dir: "data/datasets/forge_balanced_accurate/val"
+  test_dir: "data/datasets/forge_balanced_accurate/test"
+
+# ============================================================================
+# Model Paths & Checkpoints
+# ============================================================================
+models:
+  checkpoints_dir: "models/checkpoints"
+  pretrained_dir: "models/pretrained"
+
+  # Individual encoder checkpoints
+  static_encoder: "models/checkpoints/static_encoder_best.pt"
+  dynamic_encoder: "models/checkpoints/dynamic_encoder_best.pt"
+  semantic_encoder: "models/checkpoints/semantic_encoder_best.pt"
+  fusion_model: "models/checkpoints/fusion_model_best.pt"
+
+# ============================================================================
+# Training Configuration
+# ============================================================================
+training:
+  # Hardware
+  device: "auto" # auto, cuda, cpu
+  num_workers: 4
+  pin_memory: true
+
+  # Common hyperparameters (can be overridden per training type)
+  batch_size: 16
+  learning_rate: 0.001
+  num_epochs: 50
+  early_stopping_patience: 5
+
+  # Optimization
+  optimizer: "adam"
+  scheduler: "reduce_on_plateau"
+  scheduler_patience: 3
+  scheduler_factor: 0.5
+
+  # Loss function
+  use_class_weights: true
+  label_smoothing: 0.1
+
+  # ============================================
+  # Training Type Specific Settings
+  # ============================================
+
+  # Static-only training (PDG-based GAT)
+  static:
+    batch_size: 16
+    learning_rate: 0.001
+    num_epochs: 50
+    early_stopping_patience: 5
+    use_cache: true
+    slither_timeout: 60
+
+  # Dynamic-only training (Execution trace-based)
+  dynamic:
+    batch_size: 16
+    learning_rate: 0.001
+    num_epochs: 50
+    early_stopping_patience: 5
+    use_cache: true
+    trace_timeout: 120
+
+  # Semantic-only training (CodeBERT-based)
+  semantic:
+    batch_size: 8
+    learning_rate: 0.00005
+    num_epochs: 30
+    early_stopping_patience: 5
+    max_length: 512
+    use_cache: true
+
+  # Full multi-modal training (All encoders + fusion)
+  full:
+    batch_size: 8
+    learning_rate: 0.0001
+    num_epochs: 100
+    early_stopping_patience: 10
+    pretrain_epochs: 20 # Epochs to pretrain individual encoders
+    fusion_epochs: 80 # Epochs for fusion training
+    use_cache: true
+
+# ============================================================================
+# Model Architecture
+# ============================================================================
+architecture:
+  static_encoder:
+    node_feature_dim: 128
+    hidden_dim: 256
+    output_dim: 768
+    dropout: 0.2
+
+  dynamic_encoder:
+    trace_feature_dim: 128
+    hidden_dim: 256
+    output_dim: 768
+    dropout: 0.2
+
+  semantic_encoder:
+    model_name: "microsoft/codebert-base"
+    hidden_dim: 768
+    output_dim: 768
+    dropout: 0.1
+
+  fusion:
+    input_dim: 768
+    hidden_dim: 512
+    num_classes: 11
+    dropout: 0.3
+
+# ============================================================================
+# Data Processing
+# ============================================================================
+processing:
+  # Caching
+  use_cache: true
+  cache_pdg: true
+  cache_traces: true
+  cache_embeddings: true
+  cache_ast: true
+
+  # Timeouts
+  slither_timeout: 60
+  mythril_timeout: 120
+  solc_timeout: 30
+
+  # Limits
+  max_samples: null # null = no limit
+  max_contract_size: 1000000 # bytes
+  max_pdg_nodes: 10000
+
+  # Solidity Compiler
+  solc_path: "solc"  # Path to solc binary
+  solc_version: "0.5.16"  # Default Solidity version
+  enable_flattening: true  # Flatten contracts before analysis
+  flatten_output_dir: "data/cache/flattened"
+
+# ============================================================================
+# Vulnerability Types
+# ============================================================================
+vulnerabilities:
+  classes:
+    - access_control
+    - arithmetic
+    - bad_randomness
+    - denial_of_service
+    - front_running
+    - reentrancy
+    - short_addresses
+    - time_manipulation
+    - unchecked_low_level_calls
+    - other
+    - safe
+
+  num_classes: 11
+
+# ============================================================================
+# Logging & Monitoring
+# ============================================================================
+logging:
+  # Output directories
+  logs_dir: "logs"
+  training_logs_dir: "training_logs"
+  runs_dir: "runs"
+  results_dir: "results"
+
+  # TensorBoard
+  tensorboard_enabled: true
+  tensorboard_dir: "runs"
+
+  # Logging levels
+  log_level: "INFO" # DEBUG, INFO, WARNING, ERROR
+
+  # Progress reporting
+  print_batch_interval: 10
+  print_epoch_interval: 1
+  detailed_metrics_interval: 5
+
+# ============================================================================
+# Testing & Evaluation
+# ============================================================================
+testing:
+  save_predictions: true
+  save_confusion_matrix: true
+  generate_report: true
+  report_format: "txt" # txt, json, html

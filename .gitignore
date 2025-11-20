@@ -56,6 +56,13 @@ tmp/
 cache/
 __results__/
 __temp__/
+runs/
+logs/
+training_logs/
+models/*.pt
+models/*.pth
+models/*.ckpt
+models/*.bin
 
 # ========================
 # Model / Transformer Caches
