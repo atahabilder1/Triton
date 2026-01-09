@@ -10,14 +10,14 @@ data:
   cache_dir: "data/cache"
 
   # Specific dataset paths
-  forge_balanced: "data/datasets/forge_balanced_accurate"
+  forge_balanced: "data/datasets/forge_reconstructed"
   smartbugs: "data/datasets/smartbugs"
   audits: "data/datasets/audits"
 
   # Train/Val/Test splits
-  train_dir: "data/datasets/forge_balanced_accurate/train"
-  val_dir: "data/datasets/forge_balanced_accurate/val"
-  test_dir: "data/datasets/forge_balanced_accurate/test"
+  train_dir: "data/datasets/forge_reconstructed/train"
+  val_dir: "data/datasets/forge_reconstructed/val"
+  test_dir: "data/datasets/forge_reconstructed/test"
 
 # ============================================================================
 # Model Paths & Checkpoints

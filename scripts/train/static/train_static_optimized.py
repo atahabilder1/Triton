@@ -48,6 +48,73 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+class FocalLoss(nn.Module):
+    """
+    Focal Loss for addressing class imbalance and prioritizing true positives
+
+    Designed for security applications where detecting vulnerabilities (true positives)
+    is more critical than avoiding false positives.
+
+    Args:
+        alpha: Weight for each class (higher = more focus on that class)
+               Use this to prioritize vulnerability detection over 'safe' detection
+        gamma: Focusing parameter (default: 2)
+               Higher gamma = more focus on hard-to-classify examples
+               Range: 0-5 (0 = standard cross-entropy, 5 = extreme focus)
+        weight: Class weights (same as CrossEntropyLoss weight parameter)
+        reduction: 'mean' or 'sum'
+
+    Example:
+        # Prioritize vulnerabilities 8x more than 'safe' class
+        alpha = torch.tensor([2.0, 2.0, 2.0, 2.0, 2.0, 0.25])  # Last is 'safe'
+        criterion = FocalLoss(alpha=alpha, gamma=2)
+    """
+    def __init__(self, alpha=None, gamma=2.0, weight=None, reduction='mean'):
+        super(FocalLoss, self).__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.weight = weight
+        self.reduction = reduction
+
+    def forward(self, inputs, targets):
+        """
+        Args:
+            inputs: Model predictions (logits) - shape: (batch_size, num_classes)
+            targets: Ground truth labels - shape: (batch_size,)
+        """
+        # Standard cross-entropy loss
+        ce_loss = nn.functional.cross_entropy(
+            inputs, targets,
+            weight=self.weight,
+            reduction='none'
+        )
+
+        # Get probabilities of correct class
+        pt = torch.exp(-ce_loss)  # pt = probability of true class
+
+        # Apply focal term: (1 - pt)^gamma
+        # When pt is high (confident correct prediction), (1-pt)^gamma is small
+        # When pt is low (uncertain or wrong prediction), (1-pt)^gamma is large
+        # This down-weights easy examples and focuses on hard ones
+        focal_term = (1 - pt) ** self.gamma
+        focal_loss = focal_term * ce_loss
+
+        # Apply alpha weighting (per-class importance)
+        if self.alpha is not None:
+            if self.alpha.device != inputs.device:
+                self.alpha = self.alpha.to(inputs.device)
+            alpha_t = self.alpha[targets]
+            focal_loss = alpha_t * focal_loss
+
+        # Reduction
+        if self.reduction == 'mean':
+            return focal_loss.mean()
+        elif self.reduction == 'sum':
+            return focal_loss.sum()
+        else:
+            return focal_loss
+
+
 class StaticDataset(Dataset):
     """Dataset for static analysis using PDG only"""
 
@@ -352,11 +419,41 @@ class StaticVulnerabilityDetector:
         trainable_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         logger.info(f"📊 Model parameters: {trainable_params:,} trainable / {total_params:,} total")
 
-        # Loss function with class weighting and label smoothing
+        # Loss function - FOCAL LOSS for prioritizing vulnerability detection
         if class_weights is not None:
             class_weights = class_weights.to(self.device)
-            logger.info(f"⚖️  Using class-weighted loss function with label smoothing")
-        self.criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=0.1)
+
+        # Create alpha weights to prioritize vulnerabilities over 'safe' class
+        # Alpha controls per-class importance (higher = more important)
+        alpha_weights = torch.ones(num_classes)
+
+        # Identify 'safe' class and reduce its importance
+        for i in range(num_classes):
+            vuln_name = vuln_types_map.get(i, f"class_{i}")
+            if vuln_name == 'safe':
+                alpha_weights[i] = 0.25  # Reduce focus on 'safe' class (less important)
+            else:
+                alpha_weights[i] = 2.0   # Increase focus on vulnerability classes (more important)
+
+        alpha_weights = alpha_weights.to(self.device)
+
+        logger.info(f"\n{'='*80}")
+        logger.info(f"🎯 FOCAL LOSS CONFIGURATION (Prioritizing TRUE POSITIVES)")
+        logger.info(f"{'='*80}")
+        logger.info(f"  Gamma (focus parameter): 2.0")
+        logger.info(f"  Alpha weights:")
+        for i in range(num_classes):
+            vuln_name = vuln_types_map.get(i, f"class_{i}")
+            logger.info(f"    - {vuln_name:<30} α = {alpha_weights[i].item():.2f}")
+        logger.info(f"  Class weights: {'Enabled (inverse frequency)' if class_weights is not None else 'Disabled'}")
+        logger.info(f"  Effect: Penalizes missing vulnerabilities ~8x more than false alarms")
+        logger.info(f"{'='*80}\n")
+
+        self.criterion = FocalLoss(
+            alpha=alpha_weights,
+            gamma=2.0,
+            weight=class_weights
+        )
 
         # TensorBoard
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

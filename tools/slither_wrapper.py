@@ -191,6 +191,271 @@ interface IERC721 is IERC165 {
     function getApproved(uint256 tokenId) external view returns (address operator);
     function setApprovalForAll(address operator, bool _approved) external;
     function isApprovedForAll(address owner, address operator) external view returns (bool);
+}''',
+
+            # ERC20 Extensions
+            'ERC20Burnable': '''
+contract Context { function _msgSender() internal view virtual returns (address) { return msg.sender; } }
+interface IERC20 { function totalSupply() external view returns (uint256); function balanceOf(address) external view returns (uint256); function transfer(address, uint256) external returns (bool); }
+contract ERC20 is Context, IERC20 {
+    mapping(address => uint256) private _balances;
+    uint256 private _totalSupply;
+    function totalSupply() public view virtual override returns (uint256) { return _totalSupply; }
+    function balanceOf(address account) public view virtual override returns (uint256) { return _balances[account]; }
+    function transfer(address, uint256) public virtual override returns (bool) { return true; }
+    function _burn(address account, uint256 amount) internal virtual {}
+}
+abstract contract ERC20Burnable is Context, ERC20 {
+    function burn(uint256 amount) public virtual { _burn(_msgSender(), amount); }
+    function burnFrom(address account, uint256 amount) public virtual { _burn(account, amount); }
+}''',
+
+            'ERC20Pausable': '''
+contract Context { function _msgSender() internal view virtual returns (address) { return msg.sender; } }
+contract Pausable is Context { bool private _paused; function paused() public view virtual returns (bool) { return _paused; } modifier whenNotPaused() { require(!paused()); _; } }
+interface IERC20 { function transfer(address, uint256) external returns (bool); }
+contract ERC20 is Context, IERC20 { function transfer(address, uint256) public virtual override returns (bool) { return true; } function _beforeTokenTransfer(address, address, uint256) internal virtual {} }
+abstract contract ERC20Pausable is ERC20, Pausable {
+    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override { super._beforeTokenTransfer(from, to, amount); require(!paused()); }
+}''',
+
+            # Upgradeable Contracts (OpenZeppelin)
+            'Initializable': '''
+abstract contract Initializable {
+    bool private _initialized;
+    bool private _initializing;
+    modifier initializer() { require(!_initialized || _initializing); bool isTopLevelCall = !_initializing; if (isTopLevelCall) { _initializing = true; _initialized = true; } _; if (isTopLevelCall) { _initializing = false; } }
+    modifier onlyInitializing() { require(_initializing); _; }
+}''',
+
+            'ContextUpgradeable': '''
+abstract contract Initializable { modifier initializer() { _; } }
+abstract contract ContextUpgradeable is Initializable {
+    function __Context_init() internal initializer {}
+    function __Context_init_unchained() internal initializer {}
+    function _msgSender() internal view virtual returns (address) { return msg.sender; }
+    function _msgData() internal view virtual returns (bytes calldata) { return msg.data; }
+}''',
+
+            'OwnableUpgradeable': '''
+abstract contract Initializable { modifier initializer() { _; } modifier onlyInitializing() { _; } }
+abstract contract ContextUpgradeable is Initializable { function _msgSender() internal view virtual returns (address) { return msg.sender; } }
+abstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {
+    address private _owner;
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    function __Ownable_init() internal onlyInitializing { __Ownable_init_unchained(); }
+    function __Ownable_init_unchained() internal onlyInitializing { _owner = _msgSender(); }
+    function owner() public view virtual returns (address) { return _owner; }
+    modifier onlyOwner() { require(owner() == _msgSender()); _; }
+    function renounceOwnership() public virtual onlyOwner { _owner = address(0); }
+    function transferOwnership(address newOwner) public virtual onlyOwner { _owner = newOwner; }
+}''',
+
+            'PausableUpgradeable': '''
+abstract contract Initializable { modifier onlyInitializing() { _; } }
+abstract contract ContextUpgradeable is Initializable { function _msgSender() internal view virtual returns (address) { return msg.sender; } }
+abstract contract PausableUpgradeable is Initializable, ContextUpgradeable {
+    bool private _paused;
+    event Paused(address account);
+    event Unpaused(address account);
+    function __Pausable_init() internal onlyInitializing { __Pausable_init_unchained(); }
+    function __Pausable_init_unchained() internal onlyInitializing { _paused = false; }
+    function paused() public view virtual returns (bool) { return _paused; }
+    modifier whenNotPaused() { require(!paused()); _; }
+    modifier whenPaused() { require(paused()); _; }
+    function _pause() internal virtual whenNotPaused { _paused = true; }
+    function _unpause() internal virtual whenPaused { _paused = false; }
+}''',
+
+            'ERC20Upgradeable': '''
+abstract contract Initializable { modifier onlyInitializing() { _; } }
+abstract contract ContextUpgradeable is Initializable { function _msgSender() internal view virtual returns (address) { return msg.sender; } }
+interface IERC20Upgradeable { function totalSupply() external view returns (uint256); function balanceOf(address) external view returns (uint256); function transfer(address, uint256) external returns (bool); function allowance(address, address) external view returns (uint256); function approve(address, uint256) external returns (bool); function transferFrom(address, address, uint256) external returns (bool); }
+contract ERC20Upgradeable is Initializable, ContextUpgradeable, IERC20Upgradeable {
+    mapping(address => uint256) private _balances;
+    mapping(address => mapping(address => uint256)) private _allowances;
+    uint256 private _totalSupply;
+    string private _name;
+    string private _symbol;
+    function __ERC20_init(string memory name_, string memory symbol_) internal onlyInitializing { _name = name_; _symbol = symbol_; }
+    function name() public view virtual returns (string memory) { return _name; }
+    function symbol() public view virtual returns (string memory) { return _symbol; }
+    function decimals() public view virtual returns (uint8) { return 18; }
+    function totalSupply() public view virtual override returns (uint256) { return _totalSupply; }
+    function balanceOf(address account) public view virtual override returns (uint256) { return _balances[account]; }
+    function transfer(address, uint256) public virtual override returns (bool) { return true; }
+    function allowance(address, address) public view virtual override returns (uint256) { return 0; }
+    function approve(address, uint256) public virtual override returns (bool) { return true; }
+    function transferFrom(address, address, uint256) public virtual override returns (bool) { return true; }
+    function _transfer(address, address, uint256) internal virtual {}
+    function _mint(address, uint256) internal virtual {}
+    function _burn(address, uint256) internal virtual {}
+    function _beforeTokenTransfer(address, address, uint256) internal virtual {}
+}''',
+
+            'ERC721Upgradeable': '''
+abstract contract Initializable { modifier onlyInitializing() { _; } }
+interface IERC165Upgradeable { function supportsInterface(bytes4) external view returns (bool); }
+abstract contract ERC165Upgradeable is Initializable, IERC165Upgradeable { function supportsInterface(bytes4) public view virtual override returns (bool) { return true; } }
+interface IERC721Upgradeable is IERC165Upgradeable { function balanceOf(address) external view returns (uint256); function ownerOf(uint256) external view returns (address); function transferFrom(address, address, uint256) external; }
+abstract contract ERC721Upgradeable is Initializable, ERC165Upgradeable, IERC721Upgradeable {
+    mapping(uint256 => address) private _owners;
+    mapping(address => uint256) private _balances;
+    function __ERC721_init(string memory, string memory) internal onlyInitializing {}
+    function balanceOf(address owner) public view virtual override returns (uint256) { return _balances[owner]; }
+    function ownerOf(uint256 tokenId) public view virtual override returns (address) { return _owners[tokenId]; }
+    function transferFrom(address, address, uint256) public virtual override {}
+    function supportsInterface(bytes4) public view virtual override(ERC165Upgradeable, IERC165Upgradeable) returns (bool) { return true; }
+}''',
+
+            'ReentrancyGuardUpgradeable': '''
+abstract contract Initializable { modifier onlyInitializing() { _; } }
+abstract contract ReentrancyGuardUpgradeable is Initializable {
+    uint256 private constant _NOT_ENTERED = 1;
+    uint256 private constant _ENTERED = 2;
+    uint256 private _status;
+    function __ReentrancyGuard_init() internal onlyInitializing { _status = _NOT_ENTERED; }
+    modifier nonReentrant() { require(_status != _ENTERED); _status = _ENTERED; _; _status = _NOT_ENTERED; }
+}''',
+
+            'ERC165Upgradeable': '''
+interface IERC165Upgradeable { function supportsInterface(bytes4 interfaceId) external view returns (bool); }
+abstract contract ERC165Upgradeable is IERC165Upgradeable {
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) { return interfaceId == type(IERC165Upgradeable).interfaceId; }
+}''',
+
+            # Access Control
+            'AccessControl': '''
+interface IAccessControl { function hasRole(bytes32, address) external view returns (bool); function getRoleAdmin(bytes32) external view returns (bytes32); function grantRole(bytes32, address) external; function revokeRole(bytes32, address) external; function renounceRole(bytes32, address) external; }
+abstract contract Context { function _msgSender() internal view virtual returns (address) { return msg.sender; } }
+abstract contract AccessControl is Context, IAccessControl {
+    bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
+    mapping(bytes32 => mapping(address => bool)) private _roles;
+    function hasRole(bytes32 role, address account) public view virtual override returns (bool) { return _roles[role][account]; }
+    function getRoleAdmin(bytes32) public view virtual override returns (bytes32) { return DEFAULT_ADMIN_ROLE; }
+    function grantRole(bytes32 role, address account) public virtual override { _roles[role][account] = true; }
+    function revokeRole(bytes32 role, address account) public virtual override { _roles[role][account] = false; }
+    function renounceRole(bytes32 role, address account) public virtual override { require(account == _msgSender()); _roles[role][account] = false; }
+    modifier onlyRole(bytes32 role) { require(hasRole(role, _msgSender())); _; }
+}''',
+
+            'AccessControlUpgradeable': '''
+abstract contract Initializable { modifier onlyInitializing() { _; } }
+abstract contract ContextUpgradeable is Initializable { function _msgSender() internal view virtual returns (address) { return msg.sender; } }
+interface IAccessControlUpgradeable { function hasRole(bytes32, address) external view returns (bool); }
+abstract contract AccessControlUpgradeable is Initializable, ContextUpgradeable, IAccessControlUpgradeable {
+    bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
+    mapping(bytes32 => mapping(address => bool)) private _roles;
+    function __AccessControl_init() internal onlyInitializing {}
+    function hasRole(bytes32 role, address account) public view virtual override returns (bool) { return _roles[role][account]; }
+    function getRoleAdmin(bytes32) public view virtual returns (bytes32) { return DEFAULT_ADMIN_ROLE; }
+    function grantRole(bytes32 role, address account) public virtual { _roles[role][account] = true; }
+    function revokeRole(bytes32 role, address account) public virtual { _roles[role][account] = false; }
+    modifier onlyRole(bytes32 role) { require(hasRole(role, _msgSender())); _; }
+}''',
+
+            # Legacy Token Standards
+            'ERC20Basic': '''
+contract ERC20Basic {
+    uint256 public totalSupply;
+    function balanceOf(address who) public view returns (uint256) { return 0; }
+    function transfer(address to, uint256 value) public returns (bool) { return true; }
+    event Transfer(address indexed from, address indexed to, uint256 value);
+}''',
+
+            'BasicToken': '''
+contract ERC20Basic { uint256 public totalSupply; function balanceOf(address) public view returns (uint256); function transfer(address, uint256) public returns (bool); }
+contract BasicToken is ERC20Basic {
+    mapping(address => uint256) balances;
+    function transfer(address, uint256) public override returns (bool) { return true; }
+    function balanceOf(address _owner) public view override returns (uint256) { return balances[_owner]; }
+}''',
+
+            'StandardToken': '''
+contract ERC20Basic { function balanceOf(address) public view returns (uint256); function transfer(address, uint256) public returns (bool); }
+contract BasicToken is ERC20Basic { mapping(address => uint256) balances; function transfer(address, uint256) public override returns (bool) { return true; } function balanceOf(address _owner) public view override returns (uint256) { return balances[_owner]; } }
+contract ERC20 { function allowance(address, address) public view returns (uint256); function transferFrom(address, address, uint256) public returns (bool); function approve(address, uint256) public returns (bool); }
+contract StandardToken is ERC20, BasicToken {
+    mapping (address => mapping (address => uint256)) internal allowed;
+    function transferFrom(address, address, uint256) public override returns (bool) { return true; }
+    function approve(address, uint256) public override returns (bool) { return true; }
+    function allowance(address, address) public view override returns (uint256) { return 0; }
+}''',
+
+            'ERC20Interface': '''
+interface ERC20Interface {
+    function totalSupply() external view returns (uint);
+    function balanceOf(address tokenOwner) external view returns (uint balance);
+    function allowance(address tokenOwner, address spender) external view returns (uint remaining);
+    function transfer(address to, uint tokens) external returns (bool success);
+    function approve(address spender, uint tokens) external returns (bool success);
+    function transferFrom(address from, address to, uint tokens) external returns (bool success);
+    event Transfer(address indexed from, address indexed to, uint tokens);
+    event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
+}''',
+
+            # Other common contracts
+            'Owned': '''
+contract Owned {
+    address public owner;
+    modifier onlyOwner { require(msg.sender == owner); _; }
+    function transferOwnership(address newOwner) public onlyOwner { owner = newOwner; }
+}''',
+
+            'PausableToken': '''
+contract Pausable { bool public paused; modifier whenNotPaused() { require(!paused); _; } modifier whenPaused() { require(paused); _; } function pause() public { paused = true; } function unpause() public { paused = false; } }
+contract ERC20Basic { function transfer(address, uint256) public returns (bool); }
+contract BasicToken is ERC20Basic { function transfer(address, uint256) public override returns (bool) { return true; } }
+contract PausableToken is BasicToken, Pausable {
+    function transfer(address _to, uint256 _value) public override whenNotPaused returns (bool) { return super.transfer(_to, _value); }
+}''',
+
+            # Governor Contracts (minimal stubs - these are complex)
+            'Governor': '''
+abstract contract Governor {
+    function propose(address[] memory, uint256[] memory, bytes[] memory, string memory) public virtual returns (uint256) { return 0; }
+    function execute(address[] memory, uint256[] memory, bytes[] memory, bytes32) public payable virtual returns (uint256) { return 0; }
+    function castVote(uint256, uint8) public virtual returns (uint256) { return 0; }
+}''',
+
+            'GovernorUpgradeable': '''
+abstract contract Initializable { modifier onlyInitializing() { _; } }
+abstract contract GovernorUpgradeable is Initializable {
+    function __Governor_init(string memory) internal onlyInitializing {}
+    function propose(address[] memory, uint256[] memory, bytes[] memory, string memory) public virtual returns (uint256) { return 0; }
+    function execute(address[] memory, uint256[] memory, bytes[] memory, bytes32) public payable virtual returns (uint256) { return 0; }
+    function castVote(uint256, uint8) public virtual returns (uint256) { return 0; }
+}''',
+
+            # CrossChain
+            'CrossChainEnabled': '''
+abstract contract CrossChainEnabled {
+    modifier onlyCrossChainSender(address) { _; }
+    function _crossChainSender() internal view virtual returns (address) { return msg.sender; }
+}''',
+
+            'CrossChainEnabledUpgradeable': '''
+abstract contract Initializable { modifier onlyInitializing() { _; } }
+abstract contract CrossChainEnabledUpgradeable is Initializable {
+    function __CrossChainEnabled_init() internal onlyInitializing {}
+    modifier onlyCrossChainSender(address) { _; }
+    function _crossChainSender() internal view virtual returns (address) { return msg.sender; }
+}''',
+
+            # ERC1155
+            'ERC1155': '''
+interface IERC165 { function supportsInterface(bytes4) external view returns (bool); }
+abstract contract ERC165 is IERC165 { function supportsInterface(bytes4) public view virtual override returns (bool) { return true; } }
+interface IERC1155 is IERC165 { function balanceOf(address, uint256) external view returns (uint256); function balanceOfBatch(address[] calldata, uint256[] calldata) external view returns (uint256[] memory); function setApprovalForAll(address, bool) external; function isApprovedForAll(address, address) external view returns (bool); function safeTransferFrom(address, address, uint256, uint256, bytes calldata) external; function safeBatchTransferFrom(address, address, uint256[] calldata, uint256[] calldata, bytes calldata) external; }
+contract ERC1155 is ERC165, IERC1155 {
+    mapping(uint256 => mapping(address => uint256)) private _balances;
+    function balanceOf(address account, uint256 id) public view virtual override returns (uint256) { return _balances[id][account]; }
+    function balanceOfBatch(address[] memory, uint256[] memory) public view virtual override returns (uint256[] memory) { return new uint256[](0); }
+    function setApprovalForAll(address, bool) public virtual override {}
+    function isApprovedForAll(address, address) public view virtual override returns (bool) { return false; }
+    function safeTransferFrom(address, address, uint256, uint256, bytes memory) public virtual override {}
+    function safeBatchTransferFrom(address, address, uint256[] memory, uint256[] memory, bytes memory) public virtual override {}
+    function supportsInterface(bytes4) public view virtual override(ERC165, IERC165) returns (bool) { return true; }
 }'''
         }
 
@@ -198,7 +463,7 @@ interface IERC721 is IERC165 {
         if self.log_failures:
             os.makedirs(os.path.dirname(self.failure_log_path), exist_ok=True)
 
-    def _use_python_api(self, source_code: str) -> tuple[Optional[Dict], Optional[str]]:
+    def _use_python_api(self, source_code: str, solc_version: Optional[str] = None) -> tuple[Optional[Dict], Optional[str]]:
         """Use Slither's Python API to get CFG/PDG data. Returns (slither_object, error_message)."""
         try:
             from slither import Slither
@@ -215,7 +480,21 @@ interface IERC721 is IERC165 {
             sys.stderr = io.StringIO()  # Suppress compilation errors
 
             try:
-                slither = Slither(temp_file, solc_disable_warnings=True)
+                # Pass solc version to Slither if provided
+                if solc_version:
+                    # Get the path to the specific solc version in virtualenv
+                    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                    solc_path = os.path.join(project_root, f"triton_env/.solc-select/artifacts/solc-{solc_version}/solc-{solc_version}")
+
+                    if os.path.exists(solc_path):
+                        logger.debug(f"Using solc at: {solc_path}")
+                        slither = Slither(temp_file, solc=solc_path, solc_disable_warnings=True)
+                    else:
+                        logger.warning(f"Solc {solc_version} not found at {solc_path}, using default")
+                        # Fallback to default solc
+                        slither = Slither(temp_file, solc_disable_warnings=True)
+                else:
+                    slither = Slither(temp_file, solc_disable_warnings=True)
             finally:
                 sys.stderr = old_stderr
 
@@ -361,8 +640,8 @@ interface IERC721 is IERC165 {
                 if self._set_solc_version(fallback_version):
                     logger.debug(f"Retrying with solc {fallback_version}")
 
-                    # Try Python API
-                    slither, _ = self._use_python_api(source_code)
+                    # Try Python API with explicit version
+                    slither, _ = self._use_python_api(source_code, fallback_version)
                     if slither:
                         result = self._extract_from_python_api(slither, contract_name)
                         if result.get('success') and result.get('pdg') and result['pdg'].number_of_nodes() > 0:
@@ -395,7 +674,7 @@ interface IERC721 is IERC165 {
                     self._log_failure(contract_path, error_msg)
 
             # Try Python API first for better PDG extraction
-            slither, api_error = self._use_python_api(source_code)
+            slither, api_error = self._use_python_api(source_code, required_version)
 
             if slither:
                 # Extract data using Python API
@@ -414,7 +693,7 @@ interface IERC721 is IERC165 {
                     if stubbed_code:
                         # Retry with stubbed code
                         logger.info("Retrying Python API with injected stubs...")
-                        slither_retry, _ = self._use_python_api(stubbed_code)
+                        slither_retry, _ = self._use_python_api(stubbed_code, required_version)
                         if slither_retry:
                             result = self._extract_from_python_api(slither_retry, contract_name)
                             if result.get('success') and result.get('pdg') and result['pdg'].number_of_nodes() > 0:
@@ -470,14 +749,50 @@ interface IERC721 is IERC165 {
                     var_name = f"{contract_name_str}.{state_var.name}"
                     pdg.add_node(var_name, type='state_variable', visibility=str(state_var.visibility))
 
-                # Add functions and build control/data flow
+                # Add functions and build control/data flow with RICH FEATURES
                 for function in contract.functions:
                     func_name = f"{contract_name_str}.{function.name}"
+
+                    # Count loops
+                    has_loop = any(node.type.name in ['STARTLOOP', 'IFLOOP'] for node in function.nodes)
+                    loop_depth = sum(1 for node in function.nodes if node.type.name in ['STARTLOOP', 'IFLOOP'])
+
+                    # Count conditionals
+                    conditionals = sum(1 for node in function.nodes if node.type.name in ['IF', 'IFLOOP'])
+
+                    # Check for require/assert
+                    has_require = any('require' in str(node.expression).lower() for node in function.nodes if node.expression)
+                    has_assert = any('assert' in str(node.expression).lower() for node in function.nodes if node.expression)
+
+                    # Check for selfdestruct/delegatecall
+                    has_selfdestruct = any('selfdestruct' in str(node.expression).lower() for node in function.nodes if node.expression)
+                    has_delegatecall = any('delegatecall' in str(node.expression).lower() for node in function.nodes if node.expression)
+
                     pdg.add_node(func_name,
                                 type='function',
                                 visibility=str(function.visibility),
                                 is_constructor=function.is_constructor,
-                                is_fallback=function.is_fallback)
+                                is_fallback=function.is_fallback,
+                                is_receive=function.is_receive,
+                                view=function.view,
+                                pure=function.pure,
+                                payable=function.payable,
+                                can_reenter=function.can_reenter(),
+                                can_send_eth=function.can_send_eth(),
+                                has_assembly=function.contains_assembly,
+                                has_loop=has_loop,
+                                loop_depth=loop_depth,
+                                has_conditional=conditionals > 0,
+                                num_conditionals=conditionals,
+                                has_require=has_require,
+                                has_assert=has_assert,
+                                has_selfdestruct=has_selfdestruct,
+                                has_delegatecall=has_delegatecall,
+                                num_internal_calls=len(function.internal_calls),
+                                num_external_calls=len(function.external_calls_as_expressions),
+                                num_low_level_calls=len(function.low_level_calls),
+                                num_state_vars_read=len(function.state_variables_read),
+                                num_state_vars_written=len(function.state_variables_written))
 
                     # Add modifiers
                     for modifier in function.modifiers:

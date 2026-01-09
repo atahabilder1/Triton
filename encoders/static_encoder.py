@@ -80,8 +80,9 @@ class StaticEncoder(nn.Module):
         self.hidden_dim = hidden_dim
         self.output_dim = output_dim
 
+        # Updated to accept 28-dimensional features (was 5)
         self.node_encoder = nn.Sequential(
-            nn.Linear(5, node_feature_dim // 2),
+            nn.Linear(28, node_feature_dim // 2),
             nn.ReLU(),
             nn.Linear(node_feature_dim // 2, node_feature_dim),
             nn.ReLU()
@@ -126,8 +127,8 @@ class StaticEncoder(nn.Module):
 
     def pdg_to_geometric(self, pdg: nx.DiGraph) -> Data:
         if pdg.number_of_nodes() == 0:
-            # Create a dummy node for empty graphs
-            x = torch.zeros((1, 5), dtype=torch.float32)
+            # Create a dummy node for empty graphs (28 dimensions)
+            x = torch.zeros((1, 28), dtype=torch.float32)
             edge_index = torch.tensor([[0], [0]], dtype=torch.long)  # Self-loop
             edge_attr = torch.zeros((1, 4), dtype=torch.float32)
             edge_attr[0, 0] = 1  # Mark as dummy edge
@@ -140,18 +141,66 @@ class StaticEncoder(nn.Module):
             node_data = pdg.nodes[node]
             node_type = node_data.get('type', 'unknown')
 
+            # Basic type encoding (3 dims)
             type_encoding = [0, 0, 0]
             if node_type == 'function':
                 type_encoding = [1, 0, 0]
-            elif node_type == 'variable':
+            elif node_type in ['variable', 'state_variable']:
                 type_encoding = [0, 1, 0]
             elif node_type == 'modifier':
                 type_encoding = [0, 0, 1]
 
-            in_degree = pdg.in_degree(node)
-            out_degree = pdg.out_degree(node)
+            # Graph structure (2 dims)
+            in_degree = pdg.in_degree(node) / 10.0
+            out_degree = pdg.out_degree(node) / 10.0
 
-            features = type_encoding + [in_degree / 10.0, out_degree / 10.0]
+            # Semantic features (10 dims) - binary flags
+            is_payable = float(node_data.get('payable', False))
+            is_view = float(node_data.get('view', False))
+            is_pure = float(node_data.get('pure', False))
+            can_reenter = float(node_data.get('can_reenter', False))
+            can_send_eth = float(node_data.get('can_send_eth', False))
+            has_assembly = float(node_data.get('has_assembly', False))
+            has_require = float(node_data.get('has_require', False))
+            has_assert = float(node_data.get('has_assert', False))
+            has_selfdestruct = float(node_data.get('has_selfdestruct', False))
+            has_delegatecall = float(node_data.get('has_delegatecall', False))
+
+            # Control flow features (3 dims)
+            has_loop = float(node_data.get('has_loop', False))
+            loop_depth = float(node_data.get('loop_depth', 0)) / 5.0  # Normalize
+            has_conditional = float(node_data.get('has_conditional', False))
+
+            # Call counts (3 dims) - normalized
+            num_internal_calls = float(node_data.get('num_internal_calls', 0)) / 10.0
+            num_external_calls = float(node_data.get('num_external_calls', 0)) / 10.0
+            num_low_level_calls = float(node_data.get('num_low_level_calls', 0)) / 5.0
+
+            # State access (2 dims) - normalized
+            num_state_vars_read = float(node_data.get('num_state_vars_read', 0)) / 10.0
+            num_state_vars_written = float(node_data.get('num_state_vars_written', 0)) / 10.0
+
+            # Special function types (4 dims)
+            is_constructor = float(node_data.get('is_constructor', False))
+            is_fallback = float(node_data.get('is_fallback', False))
+            is_receive = float(node_data.get('is_receive', False))
+            is_external = float(str(node_data.get('visibility', '')).lower() == 'external')
+
+            # Combine all features (3+2+10+3+3+2+4 = 27 dims, +1 for external_call type = 28)
+            features = (
+                type_encoding +  # 3
+                [in_degree, out_degree] +  # 2
+                [is_payable, is_view, is_pure, can_reenter, can_send_eth,  # 10
+                 has_assembly, has_require, has_assert, has_selfdestruct, has_delegatecall] +
+                [has_loop, loop_depth, has_conditional] +  # 3
+                [num_internal_calls, num_external_calls, num_low_level_calls] +  # 3
+                [num_state_vars_read, num_state_vars_written] +  # 2
+                [is_constructor, is_fallback, is_receive, is_external]  # 4
+            )
+
+            # Verify we have exactly 28 features
+            assert len(features) == 28, f"Expected 28 features, got {len(features)}"
+
             node_features.append(features)
 
         x = torch.tensor(node_features, dtype=torch.float32)
