@@ -97,7 +97,11 @@ class Config:
 
     def get_num_classes(self) -> int:
         """Get number of vulnerability classes"""
-        return self.get('vulnerabilities.num_classes', 11)
+        return self.get('vulnerabilities.num_classes', 2)  # Default to binary (vulnerable vs safe)
+
+    def get_binary_mode(self) -> bool:
+        """Check if binary classification mode is enabled"""
+        return self.get('vulnerabilities.binary_mode', True)  # Default to binary mode
 
     @property
     def train_dir(self) -> Path:

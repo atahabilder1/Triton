@@ -203,7 +203,8 @@ class CrossModalFusion(nn.Module):
         output_dim: int = 768,
         num_heads: int = 8,
         dropout: float = 0.1,
-        num_vulnerability_types: int = 11
+        num_vulnerability_types: int = 2,  # Changed to 2 for binary classification (vulnerable vs safe)
+        binary_mode: bool = True  # New flag for binary classification mode
     ):
         super(CrossModalFusion, self).__init__()
 

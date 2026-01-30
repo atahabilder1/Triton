@@ -186,7 +186,10 @@ class StaticEncoder(nn.Module):
             is_receive = float(node_data.get('is_receive', False))
             is_external = float(str(node_data.get('visibility', '')).lower() == 'external')
 
-            # Combine all features (3+2+10+3+3+2+4 = 27 dims, +1 for external_call type = 28)
+            # Complexity score (1 dim) - based on cyclomatic complexity estimate
+            complexity_score = float(node_data.get('complexity', 0)) / 10.0
+
+            # Combine all features (3+2+10+3+3+2+4+1 = 28 dims)
             features = (
                 type_encoding +  # 3
                 [in_degree, out_degree] +  # 2
@@ -195,7 +198,8 @@ class StaticEncoder(nn.Module):
                 [has_loop, loop_depth, has_conditional] +  # 3
                 [num_internal_calls, num_external_calls, num_low_level_calls] +  # 3
                 [num_state_vars_read, num_state_vars_written] +  # 2
-                [is_constructor, is_fallback, is_receive, is_external]  # 4
+                [is_constructor, is_fallback, is_receive, is_external] +  # 4
+                [complexity_score]  # 1
             )
 
             # Verify we have exactly 28 features
